@@ -1,12 +1,14 @@
 <%@ page import="java.text.SimpleDateFormat"%>
 <%@ page language="java" contentType="text/html; charset=utf-8"
 	pageEncoding="utf-8"%>
+	
 <!DOCTYPE html>
 <html>
 <%@ include file="common.jsp"%>
 <head>
 <meta charset="utf-8">
 <title>日志</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=2.0, user-scalable=yes">
 <link rel="shortcut icon" href="#" />
 </head>
 <body>
@@ -14,7 +16,7 @@
 		<div id="head" class="layui-header">
 			<div class="layui-logo" style="color: white;">日志</div>
 			<ul class="layui-nav" style="text-align: right;">
-				<li class="layui-nav-item"><a href="">配置</a></li>
+				<li class="layui-nav-item"><a href="/WebServer">配置</a></li>
 
 				<li class="layui-nav-item" style="padding-right: 20px"><a
 					href="">日志<span class="layui-badge" id="listSize">${list.size()}</span></a>
@@ -23,17 +25,20 @@
 		</div>
 	</div>
 
-	<div class="layui-form" id="main" style="margin: 25px">
+	<div class="layui-form" id="main" style="margin: 15px">
 		<div class="layui-btn-group demoTable">
 			<button class="layui-btn layui-btn-sm "
 				onclick="window.location.reload()">
 				<i class="layui-icon layui-icon-refresh"></i>刷新
 			</button>
 			<button class="layui-btn layui-btn-sm " data-type="moreDel">多选删除</button>
-			<button class="layui-btn layui-btn-sm " data-type="moreDown">多选下载</button>
+			<button class="layui-btn layui-btn-sm " data-type="moreDown">多选下载</button>			
 		</div>
-		<span id=showTime style="float: right; padding-right: 20px">正在获取服务器时间</span>
+		<input style="height:27px; float: right;" value="键入即搜索">
+
+		
 		<table id="demo" lay-filter="test"></table>
+				<span id=showTime style="float: right; padding-right: 20px; font-size:12px;">正在获取服务器时间</span>
 		<script type="text/html" id="barDemo">
  				<a class="layui-btn layui-btn-xs" lay-event="look">预览</a>
   				<a class="layui-btn layui-btn-xs" lay-event="down">下载</a>
@@ -78,7 +83,7 @@
 	      ,{field: 'lastModified', title: '最后修改',sort: true} 
 	      ,{field: 'path', title: '路径'}
 	      ,{field: 'length', title: '大小'} 	    
-	      ,{width:250, title: '操作' , align:'center', toolbar: '#barDemo',fixed: 'right'} 	    
+	      ,{width:250, title: '操作' , align:'center', toolbar: '#barDemo'} 	    
 	    ]]
 	    ,text:{
 	    	none:'暂无相关数据'
@@ -120,39 +125,38 @@
 	  table.on('checkbox(test)', function(obj){
 		   console.log(obj)
 		});  
-
-	  var $ = layui.$, active = {
-			  //多选删除 多选下载
+	  
+	  //多选删除 多选下载
+	  var $ = layui.$, active = {			
 			    moreDel: function(){ //多选删除按钮  	  
-			    	var checkStatus = table.checkStatus('idTest');
-				     if(!checkStatus.data.length == 0){
-				    	 layer.confirm('确认删除' + checkStatus.data.length + '个文件？', {
+			    	var checkStatus = table.checkStatus('idTest')
+		  		      ,data = checkStatus.data; 
+				     if(!data.length == 0){
+				    	 layer.confirm('确认删除' + data.length + '个文件？', {
 					  			title: '多选删除',
 					  			  btn: ['确认','取消'] //按钮
-					  			},  function(){    
-					  			  var checkStatus = table.checkStatus('idTest')
-					  		      ,data = checkStatus.data;  
-								      $.each((data), function (n, value) {
-								    	  layer.msg('删除成功',{
-								    		  time: 500,
+					  			},  function(){     
+								    $.each((data), function (n, value) {	
+								    	
+								    $.post("${ctx}/LogServlet", {pathName:value.name,method:"del"},function(){		
+								    	 layer.msg('删除成功',{
+								    		  time: 800,
 								    		  end: function(){
-								    			  $.post("${ctx}/LogServlet", {pathName:value.name,method:"del"},function(data){									    		
-										  				window.location.reload();
-											      });
+								    			  window.location.reload();
 								    		  }
-								    	  });						    	
-							  		});
-					     		});
+								    	  });										
+										});													    	
+							  		 });
+					 	    	 });
 				     }else{
 				    	 layer.msg("请先勾选");
-				     }
-			    	 
+				     }			    	 
 			    }			   
 			    ,moreDown: function(){ //多选下载按钮
 			    	 var checkStatus = table.checkStatus('idTest')
 		  		      ,data = checkStatus.data; 
 			     if(!data.length == 0){
-			    	 layer.confirm('确认下载' + checkStatus.data.length + '个文件？', {
+			    	 layer.confirm('确认下载' + data.length + '个文件？', {
 				  			title: '多选下载',
 				  			  btn: ['确认','取消'] //按钮
 				  			},  function(){    				  			  
